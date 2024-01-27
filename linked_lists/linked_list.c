@@ -5,76 +5,99 @@ Date: 1/26/2024
 Description: simple algorithm to make a linked list in c
 */
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-// idea of the linked list is that it is made of an structure called node and each node points to the next node in the list like they are waved together
-// not like array(in arrays each elemets are stored back to back to back) these node are not stored contiguesly(they are at random memmory locations) that's why pointer to the next node is needed
-//advantage of linked list is that no matter howmany elements are in the array while there are more memmory you can insert to anlinked list with constatnt number of steps which is scientifically O{n}
+// Define a node in the linked list
+typedef struct node {
+    int number;         // Value of the node
+    struct node *next;  // Pointer to the next node
+} node;
 
-// defining node
-// node has two fields as number(wich is the value) and the next(which is the pointer to the next node)
-typedef struct node 
-{
-    int number;
-    struct node *next;
-}
-node;
-
+// Function prototypes
 void print_list(node *list);
 void free_list(node *list);
 
-int main(int argc, char *argv[])
+int main(int argc, char *argv[]) 
 {
     if (argc < 2) 
     {
-        printf("USAGE : ./linked_list ....space separeted array\n");
+        printf("USAGE: ./linked_list <space-separated numbers>\n");
         return 1;
     }
-    node *list = NULL; //pointer to the first element in the list
-    for (int i = 1; i < argc; i++)
+
+    node *list = NULL; // Pointer to the first element in the list
+
+    // Iterate over command line arguments
+    for (int i = 1; i < argc; i++) 
     {
-        node *n = malloc(sizeof(node)); // current node
-        //error handling
-        if (n == NULL)
+        int number = atoi(argv[i]);
+        node *n = malloc(sizeof(node)); // Allocate memory for new node
+        if (n == NULL) 
         {
-            printf("memory allocation failed");
+            printf("Memory allocation failed\n");
             return 1;
         }
 
-        n->number = atoi(argv[i]); // making the number field in current node equal to the number in the current position of array
-        //as argv is an array of strings we have to convert that string to int for that atoi(ascii to interger) function is used
+        n->number = number; // Set node's value
+        n->next = NULL; // Initialize next pointer to NULL
 
-        n->next = list; // setting the next field to points to previous node which is previously the first elemet(list is the pointer to the first element)
-
-        list = n; // making the pointer list to point to the current node as it is the first element now
+        if (list == NULL) 
+        {
+            // If list is empty, set new node as the first node
+            list = n;
+        }
+        else if (list->number > number) // if number is smaller than the first element adding the current node to beginning
+        {
+            n->next = list;
+            list = n;
+        }
+        else
+        {
+            node *ptr = list;
+            while(ptr != NULL)
+            {
+                // if at the end add node to end
+                if (ptr->next == NULL)
+                {
+                    ptr->next = n;
+                    break;
+                }
+                // if next nord's number is smaller add node before it
+                if (ptr->next->number > number) // if next nodes number is bigger than number
+                {
+                    n->next = ptr->next;
+                    ptr->next = n;
+                    break;
+                }
+                ptr = ptr->next;
+            }
+        }
     }
+
     print_list(list);
     free_list(list);
+    return 0;
 }
 
-// printing the number field of each node
-void print_list(node *list)
+// Print all elements in the linked list
+void print_list(node *list) 
 {
-    // idea here is the while pointer is not NULL(pointer becomes null when at the end of the array las elemets next field is null) print the number field of the node pointed by pointer
-    node *ptr = list;
-    while(ptr != NULL)
+    for (node *ptr = list; ptr != NULL; ptr = ptr->next) 
     {
-        printf("%i  ",ptr->number);
-        ptr = ptr->next;
+        printf("%i  ", ptr->number);
     }
     printf("\n");
-
 }
 
-//freeing the allocated memory for each node
-void free_list(node *list)
+// Free the memory allocated for the linked list
+void free_list(node *list) 
 {
-    node *ptr = list;
-    while (ptr != NULL)
+    while (list != NULL) 
     {
-        node *temp = ptr->next;
-        free(ptr);
-        ptr = temp;
+        node *temp = list->next;
+        free(list);
+        list = temp;
     }
 }
